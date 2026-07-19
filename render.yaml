@@ -5,7 +5,7 @@ services:
     plan: free
     region: oregon
     buildCommand: npm install --include=dev && npm run build
-    startCommand: npm run db:migrate && npm start
+    startCommand: npm run db:migrate && node dist/scripts/seed.js && npm start
     healthCheckPath: /health
     envVars:
       - key: NODE_ENV
@@ -26,6 +26,10 @@ services:
         sync: false # set to your deployed frontend URL after first deploy
       - key: SELF_PING_URL
         sync: false # set to this service's own Render URL once deployed, e.g. https://venuxpay-api.onrender.com — keeps the free instance awake, see Go-Live Guide
+      - key: SEED_ADMIN_EMAIL
+        sync: false # set this + SEED_ADMIN_PASSWORD, then deploy — creates your first admin login automatically, no shell needed
+      - key: SEED_ADMIN_PASSWORD
+        sync: false
 
 databases:
   - name: venuxpay-db

@@ -38,11 +38,18 @@ API runs on `http://localhost:4000`. Health check: `GET /health`.
 
 1. Push this backend to its own GitHub repo.
 2. In Render: **New > Blueprint**, point it at the repo — `render.yaml` sets
-   up the web service and a managed Postgres database automatically.
-3. After first deploy, set `CORS_ORIGIN` in the Render dashboard to your
-   deployed frontend URL.
-4. Run the seed script once via the Render Shell tab:
-   `SEED_ADMIN_EMAIL=you@venuxpay.com SEED_ADMIN_PASSWORD=... npm run db:seed`
+   up the web service and a managed Postgres database automatically, both on
+   the free plan (no credit card required).
+3. After first deploy, set these environment variables on the web service
+   (Render dashboard → your service → Environment):
+   - `CORS_ORIGIN` → your deployed frontend URL
+   - `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD` → your first admin login
+   - `SELF_PING_URL` → this service's own URL, to keep the free instance awake
+     (see the Go-Live Guide for details)
+4. Saving those triggers a redeploy. The database migration and the admin
+   account are both created automatically as part of startup — no Shell
+   access needed (the free plan doesn't include one anyway). Watch the Logs
+   tab for `Created super admin: ...` followed by the server starting.
 5. In the admin panel, go to **Settings > Providers** and add your real VTU
    provider and Paystack/Monnify credentials — nothing is hardcoded.
 
