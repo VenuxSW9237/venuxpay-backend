@@ -11,7 +11,7 @@ export const env = {
   port: Number(process.env.PORT || 4000),
   databaseUrl: process.env.DATABASE_URL || "",
   jwtSecret: process.env.JWT_SECRET || "dev-only-insecure-secret-change-me",
-  jwtExpiresIn: process.env.JWT_EXPIRES_IN || "15m",
+  jwtExpiresIn: process.env.JWT_EXPIRES_IN || "7d", // TODO: replace with short-lived access + refresh token rotation
   refreshTokenExpiresIn: process.env.REFRESH_TOKEN_EXPIRES_IN || "30d",
   encryptionKey: process.env.ENCRYPTION_KEY || "",
   corsOrigin: process.env.CORS_ORIGIN || "http://localhost:3000",

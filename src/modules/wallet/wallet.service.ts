@@ -67,7 +67,12 @@ export async function transferInternal(senderId: string, recipientIdentifier: st
 /** Wallet-to-bank withdrawal. Debits immediately (funds held), then the payout
  *  is dispatched to the bank transfer provider (Paystack/Monnify Transfers) —
  *  see payments module. If the payout provider later reports failure via
- *  webhook, the debit is reversed there. */
+ *  webhook, the debit is reversed there.
+ *
+ *  NOT YET SAFE TO USE: the actual payout dispatch below is unimplemented.
+ *  This throws until that's built, so the endpoint can never debit a user's
+ *  wallet without a real transfer ever being sent. Remove this guard only
+ *  once the TODO below is implemented and tested against a real payout. */
 export async function initiateBankWithdrawal(
   userId: string,
   bankCode: string,
@@ -75,6 +80,12 @@ export async function initiateBankWithdrawal(
   accountName: string,
   amount: number,
 ) {
+  throw HttpError.badRequest(
+    "Bank withdrawal isn't available yet — payout provider integration is still in progress.",
+    "WITHDRAWAL_NOT_AVAILABLE",
+  );
+
+  // eslint-disable-next-line no-unreachable
   const wallet = await getWalletByUserId(userId);
   const reference = generateReference();
 
@@ -102,7 +113,8 @@ export async function initiateBankWithdrawal(
 
   // TODO: dispatch to Paystack/Monnify Transfers API here once credentials
   // are configured in the admin panel. The transaction stays PROCESSING
-  // until the provider's webhook confirms success or failure.
+  // until the provider's webhook confirms success or failure. Remove the
+  // early throw above once this is implemented and tested end-to-end.
 
   return { reference, status: txn.status };
 }

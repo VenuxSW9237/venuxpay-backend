@@ -7,6 +7,7 @@ import { validateBody, asyncHandler } from "../../lib/validate";
 import { requireUser } from "../../middleware/auth";
 import { registerUser, loginUser, issueOtp, verifyOtp } from "./auth.service";
 import { getWalletBalance, getWalletByUserId } from "../wallet/ledger.service";
+import { HttpError } from "../../lib/http-error";
 
 const router = Router();
 
@@ -90,6 +91,47 @@ router.get(
         referralCode: user.referralCode,
       },
       wallet: { balance, currency: wallet.currency },
+    });
+  }),
+);
+
+const updateMeSchema = z.object({
+  fullName: z.string().min(2).max(120).optional(),
+  phone: z.string().min(10).max(15).optional(),
+});
+
+router.patch(
+  "/me",
+  requireUser,
+  validateBody(updateMeSchema),
+  asyncHandler(async (req, res) => {
+    let updated;
+    try {
+      [updated] = await db
+        .update(users)
+        .set({ ...req.body, updatedAt: new Date() })
+        .where(eq(users.id, req.userId!))
+        .returning();
+    } catch (err: unknown) {
+      const pgError = (err as { cause?: { code?: string; constraint?: string } }).cause
+        ?? (err as { code?: string; constraint?: string });
+      if (pgError?.code === "23505") {
+        const field = pgError.constraint?.includes("phone") ? "phone number" : "value";
+        throw HttpError.conflict(`That ${field} is already in use by another account`, "DUPLICATE_FIELD");
+      }
+      throw err;
+    }
+
+    res.json({
+      user: {
+        id: updated.id,
+        fullName: updated.fullName,
+        email: updated.email,
+        phone: updated.phone,
+        username: updated.username,
+        kycStatus: updated.kycStatus,
+        referralCode: updated.referralCode,
+      },
     });
   }),
 );
